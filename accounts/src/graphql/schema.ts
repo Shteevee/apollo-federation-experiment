@@ -24,7 +24,7 @@ export const resolvers = {
     signUp: (
       parent: unknown,
       { email, username, password }: SignUpArgs,
-      { ioc }: GraphqlContext,
+      { ioc }:GraphqlContext,
     ) => authService(ioc).signUp(email, username, password),
     login: (
       parent: unknown,

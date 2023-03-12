@@ -1,21 +1,22 @@
 version: "3.8"
 services:
-  # gateway:
-  #   container_name: "gateway"
-  #   build:
-  #     context: ./gateway
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ./gateway:/home/gateway
-  #     - ./gateway/node_modules:/home/gateway/node_modules
-  #   environment:
-  #     GATEWAY_API_PORT:
-  #   depends_on:
-  #     - accounts
-  #   network_mode: "host"
+  gateway:
+    container_name: "gateway"
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    volumes:
+      - ./gateway:/home/gateway
+      - ./gateway/node_modules:/home/gateway/node_modules
+    environment:
+      GATEWAY_API_PORT:
+    depends_on:
+      - accounts_graph
+      - projects_graph
+    network_mode: "host"
 
-  accounts:
-    container_name: "accounts"
+  accounts_graph:
+    container_name: "accounts_graph"
     build:
       context: ./accounts
       dockerfile: Dockerfile
@@ -24,29 +25,35 @@ services:
       - ./accounts/node_modules:/home/accounts/node_modules
     environment:
       JWT_SECRET:
-      DB_HOST:
-      DB_PORT:
-      DB_NAME:
-      DB_USER:
-      DB_PASSWORD:
-      DB_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?schema=public"
+      DB_HOST: ${ACCOUNTS_DB_HOST}
+      DB_PORT: ${ACCOUNTS_DB_PORT}
+      DB_NAME: ${ACCOUNTS_DB_NAME}
+      DB_USER: ${ACCOUNTS_DB_USER}
+      DB_PASSWORD: ${ACCOUNTS_DB_PASSWORD}
+      DB_URL: "postgresql://${ACCOUNTS_DB_USER}:${ACCOUNTS_DB_PASSWORD}@${ACCOUNTS_DB_HOST}:${ACCOUNTS_DB_PORT}/${ACCOUNTS_DB_NAME}?schema=public"
       ACCOUNTS_API_PORT:
-    ports:
-      - "${ACCOUNTS_API_PORT}:${ACCOUNTS_API_PORT}"
     depends_on:
       - accounts_db
     network_mode: "host"
 
   accounts_db:
-    build:
-      context: ./accounts
     container_name: "accounts_postgresql"
     image: postgres:15.2-alpine
     restart: always
-    ports:
-      - '5432:5432'
     environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${ACCOUNTS_DB_USER}
+      - POSTGRES_PASSWORD=${ACCOUNTS_DB_PASSWORD}
+      - POSTGRES_DB=${ACCOUNTS_DB_NAME}
+    network_mode: "host"
+
+  projects_graph:
+    container_name: "projects_graph"
+    build:
+      context: ./projects
+      dockerfile: Dockerfile
+    volumes:
+      - ./projects:/home/projects
+      - ./projects/node_modules:/home/projects/node_modules
+    environment:
+      PROJECTS_API_PORT:
     network_mode: "host"

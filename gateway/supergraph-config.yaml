@@ -1,10 +1,10 @@
-federation_version: 2
+federation_version: =2.3.2
 subgraphs:
-  locations:
-    routing_url: https://flyby-locations-sub.herokuapp.com/
+  accounts:
+    routing_url: http://localhost:4001
     schema:
-      subgraph_url: https://flyby-locations-sub.herokuapp.com/
-  reviews:
-    routing_url: https://flyby-reviews-sub.herokuapp.com/
+      subgraph_url: http://localhost:4001
+  projects:
+    routing_url: http://localhost:4002
     schema:
-      subgraph_url: https://flyby-reviews-sub.herokuapp.com/
+      subgraph_url: http://localhost:4002

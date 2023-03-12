@@ -1,17 +1,34 @@
 import { ApolloServer } from '@apollo/server';
 import { startStandaloneServer } from '@apollo/server/standalone';
 import { ApolloGateway } from '@apollo/gateway';
-import { readFileSync } from 'fs';
+import { watch } from 'fs';
+import { readFile } from 'fs/promises';
 
-const supergraphSdl = readFileSync('./supergraph.graphql').toString();
-
-// Initialize an ApolloGateway instance and pass it
-// the supergraph schema as a string
+// Initialize an ApolloGateway instance 
 const gateway = new ApolloGateway({
-  supergraphSdl,
+  async supergraphSdl({ update, healthCheck }) {
+    const watcher = watch('./supergraph.graphql');
+    // subscribe to file changes
+    watcher.on('change', async () => {
+      // update the supergraph schema
+      try {
+        const updatedSupergraph = await readFile('./supergraph.graphql', 'utf-8');
+        await healthCheck(updatedSupergraph);
+        update(updatedSupergraph);
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    return {
+      supergraphSdl: await readFile('./supergraph.graphql', 'utf-8'),
+      async cleanup() {
+        watcher.close();
+      },
+    };
+  },
 });
 
-// Pass the ApolloGateway to the ApolloServer constructor
 const server = new ApolloServer({
   gateway,
 });
